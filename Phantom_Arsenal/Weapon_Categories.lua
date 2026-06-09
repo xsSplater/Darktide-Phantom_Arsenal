@@ -3,7 +3,6 @@
 -- Add new weapons to the appropriate lists to update the mod's behavior.
 
 local WeaponCategories = {
--- Ranged weapons
 	Ranged = {
 	-- Weapons with a proper aim-down-sights (ADS) / brace mode
 		braced = {
@@ -108,7 +107,6 @@ local WeaponCategories = {
 			"ogryn_thumper_p1_m2",		-- Rumbler Lorenz Mk VI
 		},
 
-	-- Psyker Staves
 		staves = {
 			"forcestaff_p1_m1",			-- Trauma/Voidblast Force Staff Equinox Mk III
 			"forcestaff_p2_m1",			-- Inferno Force Staff Rifthaven Mk II
@@ -117,9 +115,7 @@ local WeaponCategories = {
 		},
 	},
 
--- Melee weapons
 	Melee = {
-	-- Shields
 		shields = {
 		-- Arbites
 			"powermaul_shield_p1_m1",	-- Shock Maul and Suppression Shield Branx Mk VI
