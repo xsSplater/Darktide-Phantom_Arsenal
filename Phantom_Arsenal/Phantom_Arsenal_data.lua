@@ -7,6 +7,11 @@ return {
 	is_togglable = true,
 	options = {
 		widgets = {
+			{
+				setting_id = "setting_hide_arms",
+				type = "checkbox",
+				default_value = false,
+			},
 			{ -- Fade
 				setting_id = "fade_speed",
 				type = "numeric",
@@ -31,7 +36,7 @@ return {
 				type = "numeric",
 				default_value = 100,
 				decimals_number = 0,
-				range = {1, 100},
+				range = {0, 100},
 			},
 			{ -- Secondary Weapon
 				setting_id = "mode_slot_secondary",
@@ -52,7 +57,7 @@ return {
 				type = "numeric",
 				default_value = 100,
 				decimals_number = 0,
-				range = {1, 100},
+				range = {0, 100},
 			},
 			{ -- Grenade slot
 				setting_id = "mode_slot_grenade",
@@ -68,7 +73,7 @@ return {
 				type = "numeric",
 				default_value = 100,
 				decimals_number = 0,
-				range = {1, 100},
+				range = {0, 100},
 			},
 			-- Special items slot (pocketable, luggable, etc.)
 			{
@@ -85,7 +90,24 @@ return {
 				type = "numeric",
 				default_value = 100,
 				decimals_number = 0,
-				range = {1, 100},
+				range = {0, 100},
+			},
+			-- Servo Skull
+			{
+				setting_id = "mode_slot_servo_skull",
+				type = "dropdown",
+				default_value = "never",
+				options = {
+					{ text = "setting_always", value = "always" },
+					{ text = "setting_never", value = "never" },
+				},
+			},
+			{ -- Servo Skull Visibility
+				setting_id = "opacity_slot_servo_skull",
+				type = "numeric",
+				default_value = 100,
+				decimals_number = 0,
+				range = {0, 100},
 			},
 		},
 	},

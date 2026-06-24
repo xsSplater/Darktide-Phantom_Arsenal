@@ -5,18 +5,23 @@ local mod = get_mod("Phantom_Arsenal")
 -- Cache for mod settings (updated on change)
 -- ===========================================================================
 local cached_settings = {
-	-- primary
+	-- Primary
 	mode_primary = mod:get("mode_slot_primary") or "never",
 	opacity_primary = (mod:get("opacity_slot_primary") or 100) / 100,
-	-- secondary
+	-- Secondary
 	mode_secondary = mod:get("mode_slot_secondary") or "never",
 	opacity_secondary = (mod:get("opacity_slot_secondary") or 100) / 100,
-	-- grenade
+	-- Grenade
 	mode_grenade = mod:get("mode_slot_grenade") or "never",
 	opacity_grenade = (mod:get("opacity_slot_grenade") or 100) / 100,
-	-- special items
+	-- Special items
 	mode_special = mod:get("mode_slot_special") or "never",
 	opacity_special = (mod:get("opacity_slot_special") or 100) / 100,
+	-- Arms
+	hide_arms = mod:get("hide_arms") or false,
+	-- Servo Skull
+	mode_servo_skull = mod:get("mode_slot_servo_skull") or "never",
+	opacity_servo_skull = (mod:get("opacity_slot_servo_skull") or 100) / 100,
 }
 
 local fade_speed = mod:get("fade_speed")
@@ -38,6 +43,13 @@ local current_alphas = {
 -- Special weapon units (grenades, pocketables, luggables)
 -- keyed by slot name, each stores { unit = Unit, alpha = number }
 local special_units = {}
+
+-- First person unit for arms hiding
+local first_person_unit_cached = nil
+
+-- Servo Skull check timer (periodic update)
+local servo_skull_check_timer = 0
+local servo_skull_check_time = 0.2
 
 -- ===========================================================================
 -- Action states
@@ -99,6 +111,14 @@ local function set_unit_transparency(unit, alpha)
 	Unit.set_shader_pass_flag_for_meshes(unit, "one_bit_alpha", true, true)
 	Unit.set_scalar_for_materials(unit, "inv_jitter_alpha", 1 - alpha, true)
 	Unit.set_scalar_for_materials(unit, "alpha_multiplier", alpha, true)
+end
+
+-- Helper to get servo skull units for the given player unit
+local function get_servo_skull_units(player_unit)
+	if not player_unit or not ALIVE[player_unit] then return nil end
+	local companion_ext = ScriptUnit.has_extension(player_unit, "companion_spawner_system")
+	if not companion_ext then return nil end
+	return companion_ext:companion_units()
 end
 
 -- Target visibility for primary or secondary slot (uses cached settings and flags)
@@ -283,9 +303,57 @@ mod.update = function(dt)
 		end
 	end
 
-	-- Special slots (grenade, pocketable, luggable)
-	local inventory_component = unit_data_ext:read_component("inventory")
-	local wielded_slot = inventory_component and inventory_component.wielded_slot
+	-- Hide Arms: sync transparency with currently wielded weapon
+	if cached_settings.hide_arms then
+		-- Ensure we have the first person unit
+		if not is_valid(first_person_unit_cached) then
+			local fp_ext = ScriptUnit.has_extension(player_unit, "first_person_system")
+			first_person_unit_cached = fp_ext and fp_ext:first_person_unit()
+		end
+
+		if is_valid(first_person_unit_cached) then
+			local inventory_component = unit_data_ext:read_component("inventory")
+			local wielded_slot = inventory_component and inventory_component.wielded_slot
+			local arms_alpha = 1
+			local apply_arms = false
+
+			if wielded_slot == "slot_primary" or wielded_slot == "slot_secondary" then
+				-- primary/secondary always have a weapon (or unarmed with alpha=1)
+				arms_alpha = current_alphas[wielded_slot]
+				apply_arms = true
+			elseif special_slot_names[wielded_slot] then
+				local entry = special_units[wielded_slot]
+				if entry and is_valid(entry.unit) then
+					arms_alpha = entry.alpha
+					apply_arms = true
+				end
+				-- if no weapon in the slot, do nothing (leave hands to game)
+			end
+
+			if apply_arms then
+				set_unit_transparency(first_person_unit_cached, arms_alpha)
+			end
+		end
+	end
+
+	-- Servo Skull transparency: apply periodically when mode is "always"
+	if cached_settings.mode_servo_skull == "always" then
+		servo_skull_check_timer = servo_skull_check_timer + dt
+		if servo_skull_check_timer >= servo_skull_check_time then
+			servo_skull_check_timer = 0
+			local units = get_servo_skull_units(player_unit)
+			if units then
+				local target_alpha = cached_settings.opacity_servo_skull
+				for _, unit in pairs(units) do
+					if is_valid(unit) then
+						set_unit_transparency(unit, target_alpha)
+					end
+				end
+			end
+		end
+	end
+	-- Note: when mode is "never", we do NOT repeatedly set transparency to 1.
+	-- Visibility is restored on setting change or mod disable.
 
 	-- Process each special slot that has a stored unit
 	for slot_name, entry in pairs(special_units) do
@@ -299,20 +367,25 @@ mod.update = function(dt)
 				opacity = cached_settings.opacity_special
 			end
 			local target = (mode == "always") and opacity or 1
-			-- (удалили проверку на wielded_slot)
-			local current = entry.alpha
 			if is_inspecting then target = 1 end
-			if math.abs(current - target) > 0.001 then
-				if current < target then
-					current = math.min(target, current + fade_speed * dt)
-				else
-					current = math.max(target, current - fade_speed * dt)
+
+			-- Skip if already at target (optimization)
+			if target == 1 and entry.alpha == 1 then
+				-- already fully visible, nothing to do
+			else
+				local current = entry.alpha
+				if math.abs(current - target) > 0.001 then
+					if current < target then
+						current = math.min(target, current + fade_speed * dt)
+					else
+						current = math.max(target, current - fade_speed * dt)
+					end
+					entry.alpha = current
+					set_unit_transparency(entry.unit, current)
+				elseif current ~= target then
+					entry.alpha = target
+					set_unit_transparency(entry.unit, target)
 				end
-				entry.alpha = current
-				set_unit_transparency(entry.unit, current)
-			elseif current ~= target then
-				entry.alpha = target
-				set_unit_transparency(entry.unit, target)
 			end
 		else
 			-- Cleanup invalid unit
@@ -343,5 +416,101 @@ mod.on_setting_changed = function(setting_name)
 		cached_settings.mode_special = mod:get("mode_slot_special")
 	elseif setting_name == "opacity_slot_special" then
 		cached_settings.opacity_special = (mod:get("opacity_slot_special") or 100) / 100
+	elseif setting_name == "mode_slot_servo_skull" or setting_name == "opacity_slot_servo_skull" then
+		cached_settings.mode_servo_skull = mod:get("mode_slot_servo_skull")
+		cached_settings.opacity_servo_skull = (mod:get("opacity_slot_servo_skull") or 100) / 100
+
+		-- Apply immediately to all existing servo skulls
+		local local_player = Managers.player:local_player_safe(1)
+		if local_player then
+			local player_unit = local_player.player_unit
+			if player_unit and ALIVE[player_unit] then
+				local units = get_servo_skull_units(player_unit)
+				if units then
+					local target_alpha = cached_settings.mode_servo_skull == "always" and cached_settings.opacity_servo_skull or 1
+					for _, unit in pairs(units) do
+						if is_valid(unit) then
+							set_unit_transparency(unit, target_alpha)
+						end
+					end
+				end
+			end
+		end
+	elseif setting_name == "hide_arms" then
+		cached_settings.hide_arms = mod:get("hide_arms")
+		if not cached_settings.hide_arms and is_valid(first_person_unit_cached) then
+			-- Reset arms to fully visible when option is turned off
+			set_unit_transparency(first_person_unit_cached, 1)
+			first_person_unit_cached = nil
+		end
 	end
 end
+
+-- ===========================================================================
+-- Enabled handler (applies settings when mod loads)
+-- ===========================================================================
+mod.on_enabled = function()
+	-- Apply servo skull settings on mod load
+	if cached_settings.mode_servo_skull == "always" then
+		local local_player = Managers.player:local_player_safe(1)
+		if local_player then
+			local player_unit = local_player.player_unit
+			if player_unit and ALIVE[player_unit] then
+				local units = get_servo_skull_units(player_unit)
+				if units then
+					local target_alpha = cached_settings.opacity_servo_skull
+					for _, unit in pairs(units) do
+						if is_valid(unit) then
+							set_unit_transparency(unit, target_alpha)
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+-- ===========================================================================
+-- Cleanup on disable
+-- ===========================================================================
+mod.on_disabled = function()
+	-- Reset arms
+	if is_valid(first_person_unit_cached) then
+		set_unit_transparency(first_person_unit_cached, 1)
+		first_person_unit_cached = nil
+	end
+
+	-- Reset all special units
+	for slot_name, entry in pairs(special_units) do
+		if entry and is_valid(entry.unit) then
+			set_unit_transparency(entry.unit, 1)
+		end
+	end
+	table.clear(special_units)
+
+	-- Reset primary and secondary
+	for slot_name, unit in pairs(weapon_units) do
+		if is_valid(unit) then
+			set_unit_transparency(unit, 1)
+		end
+	end
+
+	-- Reset servo skulls (restore full visibility)
+	local local_player = Managers.player:local_player_safe(1)
+	if local_player then
+		local player_unit = local_player.player_unit
+		if player_unit and ALIVE[player_unit] then
+			local units = get_servo_skull_units(player_unit)
+			if units then
+				for _, unit in pairs(units) do
+					if is_valid(unit) then
+						set_unit_transparency(unit, 1)
+					end
+				end
+			end
+		end
+	end
+end
+
+-- Call on_enabled to apply settings immediately upon mod load (if player already exists)
+mod:on_enabled()
