@@ -40,11 +40,6 @@ local WeaponCategories = {
 			"laspistol_p1_m1",			-- Heavy Laspistol Accatran Mk II
 			"laspistol_p1_m3",			-- Heavy Laspistol Kantrael Mk X
 
-		-- Needle Pistols
-			"needlepistol_p1_m1",		-- Needle Pistol Branx Mk VI
-			"needlepistol_p1_m2",		-- Needle Pistol Branx Mk II
-		--  "needlepistol_p1_m3",		-- ???
-
 		-- Shotguns
 			"shotgun_p1_m1",			-- Combat Shotgun Zarona Mk VI
 			"shotgun_p1_m2",			-- Combat Shotgun Agripinaa Mk VII
@@ -52,6 +47,19 @@ local WeaponCategories = {
 
 		-- Stub Revolver
 			"stubrevolver_p1_m1",		-- Quickdraw Stub Revolver Zarona Mk IIa
+
+	-- HIVE SCUM
+		-- Needle Pistols
+			"needlepistol_p1_m1",		-- Needle Pistol Branx Mk VI
+			"needlepistol_p1_m2",		-- Needle Pistol Branx Mk II
+		--  "needlepistol_p1_m3",		-- ???
+
+	-- SKITARII
+		-- Galvanic Rifle
+			"galvanic_rifle_p1_m1",		-- Galvanic Rifle Branx Mk CV
+
+		-- Phosphor Blast Pistol
+			"phosphor_pistol_p1_m1",	-- Phosphor Blast Pistol Branx Mk XI
 		},
 
 	-- Weapons without a traditional ADS/scope
@@ -64,15 +72,24 @@ local WeaponCategories = {
 			"autogun_p2_m2",			-- Braced Autogun Graia Mk IV
 			"autogun_p2_m3",			-- Braced Autogun Agripinaa Mk VIII
 
-		-- Dual Autopistols
-			"dual_autopistols_p1_m1",	-- Dual Autopistols Branx Mk III
+		-- Plasma Gun
+			"plasmagun_p1_m1",			-- Plasma Gun Magnacore Mk II
+			"plasmagun_p1_m2",			-- Plasma Gun Magnacore Mk III
 
-		-- Dual Stub Pistols
-			"dual_stubpistols_p1_m1",	-- Dual Stub Pistols Branx Mk VIII
+		-- Shotguns
+			"shotgun_p2_m1",			-- Double-Barreled Shotgun Crucis Mk XI
 
+			"shotgun_p4_m1",			-- Exterminator Shotgun Exaction Mk III
+			"shotgun_p4_m2",			-- Exterminator Shotgun Exaction Mk VIII
+
+		-- Stub Revolver
+			"stubrevolver_p1_m2",		-- Quickdraw Stub Revolver Agripinaa Mk XIV
+
+	-- ZEALOT
 		-- Flamer
 			"flamer_p1_m1",				-- Purgation Flamer Artemia Mk III
 
+	-- OGRYN
 		-- Grenadier Gauntlet
 			"ogryn_gauntlet_p1_m1",		-- Grenadier Gauntlet Blastoom Mk III
 
@@ -85,29 +102,29 @@ local WeaponCategories = {
 			"ogryn_heavystubber_p2_m2",	-- Heavy Stubber Gorgonum Mk IIIa
 			"ogryn_heavystubber_p2_m3",	-- Heavy Stubber Achlys Mk II
 
-		-- Plasma Gun
-			"plasmagun_p1_m1",			-- Plasma Gun Magnacore Mk II
-
 		-- Ripper Guns
 			"ogryn_rippergun_p1_m1",	-- Ripper Gun Foe-Rend Mk II
 			"ogryn_rippergun_p1_m2",	-- Ripper Gun Foe-Rend Mk V
 			"ogryn_rippergun_p1_m3",	-- Ripper Gun Foe-Rend Mk VI
 
-		-- Shotguns
-			"shotgun_p2_m1",			-- Double-Barreled Shotgun Crucis Mk XI
-
-			"shotgun_p4_m1",			-- Exterminator Shotgun Exaction Mk III
-			"shotgun_p4_m2",			-- Exterminator Shotgun Exaction Mk VIII
-
-		-- Stub Revolver
-			"stubrevolver_p1_m2",		-- Quickdraw Stub Revolver Agripinaa Mk XIV
-
 		-- Thumpers
 			"ogryn_thumper_p1_m1",		-- Kickback Lorenz Mk V
 			"ogryn_thumper_p1_m2",		-- Rumbler Lorenz Mk VI
+
+	-- HIVE SCUM
+		-- Dual Autopistols
+			"dual_autopistols_p1_m1",	-- Dual Autopistols Branx Mk III
+
+		-- Dual Stub Pistols
+			"dual_stubpistols_p1_m1",	-- Dual Stub Pistols Branx Mk VIII
+
+	-- SKITARII
+		-- Arc Rifle
+			"arc_rifle_p1_m1",			-- Arc Rifle Branx Mk IV
 		},
 
 		staves = {
+	-- PSYKER
 			"forcestaff_p1_m1",			-- Trauma/Voidblast Force Staff Equinox Mk III
 			"forcestaff_p2_m1",			-- Inferno Force Staff Rifthaven Mk II
 			"forcestaff_p3_m1",			-- Electrokinetic Force Staff Nomanus Mk VI
@@ -117,13 +134,13 @@ local WeaponCategories = {
 
 	Melee = {
 		shields = {
-		-- Arbites
+	-- ARBITES
 			"powermaul_shield_p1_m1",	-- Shock Maul and Suppression Shield Branx Mk VI
 			"powermaul_shield_p1_m2",	-- Shock Maul and Suppression Shield Branx Mk XI
 
 			"shotpistol_shield_p1_m1",	-- Subductor Shotpistol and Riot Shield Judgement Mk IV
 
-		-- Ogryn
+	-- OGRYN
 			"ogryn_powermaul_slabshield_p1_m1", -- Battle Maul and Slab Shield Orox Mk II and Mk III
 		},
 	},
